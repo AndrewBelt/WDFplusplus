@@ -4,7 +4,7 @@
     ----------------------------------------------------------------------------
     Author : Maxime Coorevits (Nord, France).
     ----------------------------------------------------------------------------
-    Official project location: no hub yet. 
+    Official project location: no hub yet.
     ----------------------------------------------------------------------------
     License: MIT License (http://www.opensource.org/licenses/mit-license.php)
     Copyright (c) 2013 by Maxime Coorevits.
@@ -35,7 +35,7 @@ namespace WDF {
 //==============================================================================
 // ** 1-PORT ** (base class for every WDF classes)
 //==============================================================================
-template &lt;typename T&gt;
+template <typename T>
 class OnePort
 {
     public:
@@ -49,24 +49,24 @@ class OnePort
         //----------------------------------------------------------------------
         virtual inline T reflected () = 0;
         //----------------------------------------------------------------------
-        virtual T R () { return port-&gt;Rp; }       // Port resistance
-        virtual T G () { return 1.0 / port-&gt;Rp; } // Port conductance (inv.Rp)
+        virtual T R () { return port->Rp; }       // Port resistance
+        virtual T G () { return 1.0 / port->Rp; } // Port conductance (inv.Rp)
         //----------------------------------------------------------------------
-        virtual void connect (OnePort&lt;T&gt;* other)
+        virtual void connect (OnePort<T>* other)
         {
-            port = other; 
-            other-&gt;port = this;
+            port = other;
+            other->port = this;
         }
         //----------------------------------------------------------------------
         T voltage () // v
-        { 
-            return (port-&gt;a + port-&gt;b) / 2.0; 
+        {
+            return (port->a + port->b) / 2.0;
         }
         //----------------------------------------------------------------------
         T current () // i
         {
-            return (port-&gt;a - port-&gt;b) / (port-&gt;Rp + port-&gt;Rp);
-        } 
+            return (port->a - port->b) / (port->Rp + port->Rp);
+        }
         //----------------------------------------------------------------------
     protected:
         //----------------------------------------------------------------------
@@ -76,31 +76,31 @@ class OnePort
         T a; // incident wave (incoming wave)
         T b; // reflected wave (outgoing wave)
         //----------------------------------------------------------------------
-        OnePort&lt;T&gt;* port; // internal pointer (used for direct connect form)
+        OnePort<T>* port; // internal pointer (used for direct connect form)
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** 2-PORT **
 //==============================================================================
-template &lt;typename T&gt;
-class TwoPort : public OnePort&lt;T&gt; // parent
+template <typename T>
+class TwoPort : public OnePort<T> // parent
 {
     public:
-        OnePort&lt;T&gt;* child;
+        OnePort<T>* child;
         //----------------------------------------------------------------------
         TwoPort (String name = String::empty)
             : OnePort (1.0, name) {}
         //----------------------------------------------------------------------
         virtual String label () const { return "2P"; }
         //----------------------------------------------------------------------
-        virtual void connectParent (OnePort&lt;T&gt;* parent)
+        virtual void connectParent (OnePort<T>* parent)
         {
             OnePort::connect (parent);
         }
         //----------------------------------------------------------------------
-        virtual void connectChild (OnePort&lt;T&gt;* port) = 0;
+        virtual void connectChild (OnePort<T>* port) = 0;
         //----------------------------------------------------------------------
-        virtual void connect (OnePort&lt;T&gt;* p, OnePort&lt;T&gt;* c)
+        virtual void connect (OnePort<T>* p, OnePort<T>* c)
         {
             OnePort::connect (p);
             connectChild (c);
@@ -108,16 +108,16 @@ class TwoPort : public OnePort&lt;T&gt; // parent
         //----------------------------------------------------------------------
         virtual inline T reflected ()
         {
-            child.port-&gt;a = child.port-&gt;reflected ();
+            child.port->a = child.port->reflected ();
             computeParentB ();
-            return port-&gt;b;
+            return port->b;
         }
         //----------------------------------------------------------------------
         virtual inline void incident (T wave)
         {
-            port-&gt;a = wave; 
+            port->a = wave;
             computeChildB ();
-            child.port-&gt;incident (child.port-&gt;b);
+            child.port->incident (child.port->b);
         }
         //----------------------------------------------------------------------
         virtual inline void computeChildB () = 0;
@@ -127,18 +127,18 @@ class TwoPort : public OnePort&lt;T&gt; // parent
 //==============================================================================
 // ** 3-PORT **
 //==============================================================================
-template &lt;typename T&gt;
-class ThreePort : public OnePort&lt;T&gt; // adapted
+template <typename T>
+class ThreePort : public OnePort<T> // adapted
 {
     public:
-        OnePort&lt;T&gt; *left, *right; 
+        OnePort<T> *left, *right;
         //----------------------------------------------------------------------
         ThreePort (String name = String::empty)
             : left (nullptr), right (nullptr), OnePort (1.0, name) {}
         //----------------------------------------------------------------------
         virtual String label () const { return "3P"; }
         //----------------------------------------------------------------------
-        virtual void connect (OnePort&lt;T&gt;* left, OnePort&lt;T&gt;* right) = 0;
+        virtual void connect (OnePort<T>* left, OnePort<T>* right) = 0;
         //----------------------------------------------------------------------
         virtual inline T reflected () = 0;
         virtual inline void incident (T wave) = 0;
@@ -147,8 +147,8 @@ class ThreePort : public OnePort&lt;T&gt; // adapted
 //==============================================================================
 // ** SERIE **
 //==============================================================================
-template &lt;typename T&gt;
-class Serie : public ThreePort&lt;T&gt;
+template <typename T>
+class Serie : public ThreePort<T>
 {
     public:
         Serie (String name = "--")
@@ -157,33 +157,33 @@ class Serie : public ThreePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "--"; }
         //----------------------------------------------------------------------
-        virtual void connect (OnePort&lt;T&gt;* l, OnePort&lt;T&gt;* r)
+        virtual void connect (OnePort<T>* l, OnePort<T>* r)
         {
-            left = l; right = r; 
-            port-&gt;Rp = (left-&gt;R() + right-&gt;R());
+            left = l; right = r;
+            port->Rp = (left->R() + right->R());
         }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
-        { 
-            port-&gt;b = -(left-&gt;port-&gt;reflected() 
-                     + right-&gt;port-&gt;reflected()); 
-            return port-&gt;b;
+        virtual inline T reflected ()
+        {
+            port->b = -(left->port->reflected()
+                     + right->port->reflected());
+            return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            register T lrW = (wave + left-&gt;port-&gt;b + right-&gt;port-&gt;b);
-             left-&gt;port-&gt;incident ( left-&gt;port-&gt;b - ( left-&gt;R()/port-&gt;R()) * lrW);
-            right-&gt;port-&gt;incident (right-&gt;port-&gt;b - (right-&gt;R()/port-&gt;R()) * lrW);
-            port-&gt;a = wave;
+            register T lrW = (wave + left->port->b + right->port->b);
+             left->port->incident ( left->port->b - ( left->R()/port->R()) * lrW);
+            right->port->incident (right->port->b - (right->R()/port->R()) * lrW);
+            port->a = wave;
         }
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** PARALLEL **
 //==============================================================================
-template &lt;typename T&gt;
-class Parallel : public ThreePort&lt;T&gt;
+template <typename T>
+class Parallel : public ThreePort<T>
 {
     public:
         Parallel (String name = "||")
@@ -192,36 +192,36 @@ class Parallel : public ThreePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "||"; }
         //----------------------------------------------------------------------
-        virtual void connect (OnePort&lt;T&gt;* l, OnePort&lt;T&gt;* r)
+        virtual void connect (OnePort<T>* l, OnePort<T>* r)
         {
-            left = l; right = r; 
-            port-&gt;Rp = (left-&gt;R() * right-&gt;R()) 
-                     / (left-&gt;R() + right-&gt;R());
+            left = l; right = r;
+            port->Rp = (left->R() * right->R())
+                     / (left->R() + right->R());
         }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
-        { 
-            register T lrG = left-&gt;G() + right-&gt;G();
-            port-&gt;b = ( left-&gt;G()/lrG) *  left-&gt;port-&gt;reflected() + 
-                      (right-&gt;G()/lrG) * right-&gt;port-&gt;reflected();
-            return port-&gt;b;
+        virtual inline T reflected ()
+        {
+            register T lrG = left->G() + right->G();
+            port->b = ( left->G()/lrG) *  left->port->reflected() +
+                      (right->G()/lrG) * right->port->reflected();
+            return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            register T lrG = left-&gt;G() + right-&gt;G();
-            register T lrW = (wave + left-&gt;port-&gt;b + right-&gt;port-&gt;b);
-             left-&gt;port-&gt;incident ( left-&gt;port-&gt;b - ( left-&gt;G()/lrG) * lrW);
-            right-&gt;port-&gt;incident (right-&gt;port-&gt;b - (right-&gt;G()/lrG) * lrW);
-            port-&gt;a = wave;
+            register T lrG = left->G() + right->G();
+            register T lrW = (wave + left->port->b + right->port->b);
+             left->port->incident ( left->port->b - ( left->G()/lrG) * lrW);
+            right->port->incident (right->port->b - (right->G()/lrG) * lrW);
+            port->a = wave;
         }
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** RESISTOR **
 //==============================================================================
-template &lt;typename T&gt;
-class Resistor : public OnePort&lt;T&gt;
+template <typename T>
+class Resistor : public OnePort<T>
 {
     public:
         Resistor (T R, String name = String::empty)
@@ -229,22 +229,22 @@ class Resistor : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "R"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = 0; return port-&gt;b;
+            port->b = 0; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave;
+            port->a = wave;
         }
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** CAPACITOR **
 //==============================================================================
-template &lt;typename T&gt;
-class Capacitor : public OnePort&lt;T&gt;
+template <typename T>
+class Capacitor : public OnePort<T>
 {
     public:
         Capacitor (T C, T Fs, String name = String::empty)
@@ -252,25 +252,25 @@ class Capacitor : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "C"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = state; return port-&gt;b;
+            port->b = state; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave; state = port-&gt;a;
+            port->a = wave; state = port->a;
         }
         //----------------------------------------------------------------------
     private:
-        T state; 
+        T state;
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** INDUCTOR **
 //==============================================================================
-template &lt;typename T&gt;
-class Inductor : public OnePort&lt;T&gt;
+template <typename T>
+class Inductor : public OnePort<T>
 {
     public:
         Inductor (T L, T Fs, String name = String::empty)
@@ -278,25 +278,25 @@ class Inductor : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "L"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = -state; return port-&gt;b;
+            port->b = -state; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave; state = port-&gt;a;
+            port->a = wave; state = port->a;
         }
         //----------------------------------------------------------------------
     private:
-        T state; 
+        T state;
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** OPEN CIRCUIT **
 //==============================================================================
-template &lt;typename T&gt;
-class OpenCircuit : public OnePort&lt;T&gt;
+template <typename T>
+class OpenCircuit : public OnePort<T>
 {
     public:
         OpenCircuit (T R, String name = String::empty)
@@ -304,22 +304,22 @@ class OpenCircuit : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "Oc"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = port-&gt;a; return port-&gt;b;
+            port->b = port->a; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave;
+            port->a = wave;
         }
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** SHORT CIRCUIT **
 //==============================================================================
-template &lt;typename T&gt;
-class ShortCircuit : public OnePort&lt;T&gt;
+template <typename T>
+class ShortCircuit : public OnePort<T>
 {
     public:
         ShortCircuit (T R, String name = String::empty)
@@ -327,22 +327,22 @@ class ShortCircuit : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "Sc"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = -port-&gt;a; return port-&gt;b;
+            port->b = -port->a; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave; 
+            port->a = wave;
         }
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** VOLTAGE SOURCE **
 //==============================================================================
-template &lt;typename T&gt;
-class VoltageSource : public OnePort&lt;T&gt;
+template <typename T>
+class VoltageSource : public OnePort<T>
 {
     public:
         VoltageSource (T V, T R, String name = String::empty)
@@ -350,25 +350,25 @@ class VoltageSource : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "Vs"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = -port-&gt;a + 2.0 * Vs; return port-&gt;b;
+            port->b = -port->a + 2.0 * Vs; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave;
+            port->a = wave;
         }
         //----------------------------------------------------------------------
     private:
-        T Vs; 
+        T Vs;
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** CURRENT SOURCE **
 //==============================================================================
-template &lt;typename T&gt;
-class CurrentSource : public OnePort&lt;T&gt;
+template <typename T>
+class CurrentSource : public OnePort<T>
 {
     public:
         CurrentSource (T I, T R, String name = String::empty)
@@ -376,25 +376,25 @@ class CurrentSource : public OnePort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "Is"; }
         //----------------------------------------------------------------------
-        virtual inline T reflected () 
+        virtual inline T reflected ()
         {
-            port-&gt;b = port-&gt;a + 2.0 * R() * Is; return port-&gt;b;
+            port->b = port->a + 2.0 * R() * Is; return port->b;
         }
         //----------------------------------------------------------------------
-        virtual inline void incident (T wave) 
+        virtual inline void incident (T wave)
         {
-            port-&gt;a = wave;
+            port->a = wave;
         }
         //----------------------------------------------------------------------
     private:
-        T Is; 
+        T Is;
         //----------------------------------------------------------------------
 };
 //==============================================================================
 // ** IDEAL TRANSFORMER **
 //==============================================================================
-template &lt;typename T&gt;
-class IdealTransformer : public TwoPort&lt;T&gt;
+template <typename T>
+class IdealTransformer : public TwoPort<T>
 {
     public:
         IdealTransformer (T ratio, String name = String::empty)
@@ -402,40 +402,40 @@ class IdealTransformer : public TwoPort&lt;T&gt;
         //----------------------------------------------------------------------
         virtual String label () const { return "][" }
         //----------------------------------------------------------------------
-        virtual void connectChild (OnePort&lt;T&gt;* port)
+        virtual void connectChild (OnePort<T>* port)
         {
             T Rs = port.R();
-            port-&gt;Rp = Rs / (n*n);
-            child.Rp = Rs; 
+            port->Rp = Rs / (n*n);
+            child.Rp = Rs;
             TwoPort::connectChild (port);
         }
         //----------------------------------------------------------------------
         virtual inline void computeChildB ()
         {
-            child.port-&gt;b = port-&gt;a * (1.0/N);
+            child.port->b = port->a * (1.0/N);
         }
         //----------------------------------------------------------------------
         virtual inline void computeParentB ()
         {
-            port-&gt;b = child.port-&gt;a * N;
+            port->b = child.port->a * N;
         }
         //----------------------------------------------------------------------
     private:
-        T N; 
+        T N;
         //----------------------------------------------------------------------
 };
 //==============================================================================
 /**
     EXTRA TEMPLATES
     ---------------
-    
-    Not direct WDF classes but interfaces for your non-linear blackboxes. 
-    
+
+    Not direct WDF classes but interfaces for your non-linear blackboxes.
+
 **/
 //==============================================================================
 // ** Newton/Raphson ** (implicit equation solver)
 //==============================================================================
-template &lt;typename T&gt;
+template <typename T>
 class NewtonRaphson
 {
     public:
@@ -446,12 +446,12 @@ class NewtonRaphson
             T x = xguess;
             T err = 1e6;
             int iteration = 0;
-            while (fabs(err) / fabs(x) &gt; epsilon)
+            while (fabs(err) / fabs(x) > epsilon)
             {
                 xguess = iterate (x);
                 err = x - xguess;
                 x = xguess;
-                if (iteration &gt; max_iter) break;
+                if (iteration > max_iter) break;
                 ++iteration;
             }
             return x;
@@ -466,7 +466,7 @@ class NewtonRaphson
         //----------------------------------------------------------------------
         virtual inline T evaluate (T x) = 0; // declare your implicit equation
         //----------------------------------------------------------------------
-    private : 
+    private :
         T xguess;
         //----------------------------------------------------------------------
 };

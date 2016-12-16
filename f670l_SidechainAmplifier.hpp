@@ -3,31 +3,31 @@
     Wavechild 670
     -------------
     Wave digital filter based emulation of a famous 1950's tube stereo limiter
-    
+
     WDF++ based source code by Maxime Coorevits (Nord, France) in 2013
-    
+
     Some part are inspired by the Peter Raffensperger project: Wavechild670,
-    a command line with python WDF generator that produce C++ code of the circuit. 
-    
+    a command line with python WDF generator that produce C++ code of the circuit.
+
     Major restructuration:
     ----------------------
         * WDF++ based project (single WDF++.hpp file)
         * full C++, zero-dependencies except JUCE (core API, AudioProcessor).
         * JUCE Plugin wrapper processor (VST, AU ...)
         * Photo-Realistic GUI
- 
+
     Reference:
     ----------
-    Toward a Wave Digital Filter Model of the Fairchild 670 Limiter, 
-    Raffensperger, P. A., (2012). 
-    Proc. of the 15th International Conference on Digital Audio Effects (DAFx-12), 
+    Toward a Wave Digital Filter Model of the Fairchild 670 Limiter,
+    Raffensperger, P. A., (2012).
+    Proc. of the 15th International Conference on Digital Audio Effects (DAFx-12),
     York, UK, September 17-21, 2012.
 
     Note:
     -----
-    Fairchild (R) a registered trademark of Avid Technology, Inc., 
+    Fairchild (R) a registered trademark of Avid Technology, Inc.,
     which is in no way associated or affiliated with the author.
-    
+
 **/
 //==============================================================================
 #ifndef __F670L_SIDECHAINAMPLIFIER_HPP_77745FAF__
@@ -39,7 +39,7 @@
 //==============================================================================
 namespace Wavechild670 {
 //==============================================================================
-template &lt;typename T&gt;
+template <typename T>
 class SidechainAmplifier
 {
     public:
@@ -56,7 +56,7 @@ class SidechainAmplifier
         // Fairchild 670 Class-B Sidechain Amplifier model
 	//----------------------------------------------------------------------
         virtual inline T process (T Vsc, T VlevelCap)
-        { 
+        {
 	    //------------------------------------------------------------------
 	    // AC Threshold Input Transformer
 	    //------------------------------------------------------------------
@@ -69,9 +69,9 @@ class SidechainAmplifier
 	    //------------------------------------------------------------------
             // Drive stage, 12BH7 + 6973 amplifier stages
 	    //------------------------------------------------------------------
-	    Vdiff = fabs (hardclip (8.4 * Vs1, -100.0, 100.0)) - VlevelCap; 
+	    Vdiff = fabs (hardclip (8.4 * Vs1, -100.0, 100.0)) - VlevelCap;
 	    //------------------------------------------------------------------
-            // The nominal output current through the bridge rectifier 
+            // The nominal output current through the bridge rectifier
             // is calculated using a diode model in series with a resistance.
 	    //------------------------------------------------------------------
 	    Inom = 0.000375 * log(1.0 + exp(((10.0 * Vdiff) / 0.6) - 10.0)) * 0.0125;
@@ -81,8 +81,8 @@ class SidechainAmplifier
 	    return Inom - 0.05 * log(1.0 + exp(((10.0 * Inom) / 0.5) - 10.0));
         }
 	//----------------------------------------------------------------------
-        inline T hardclip (T x, T min, T max) { return (x &lt; min) ? min 
-                                                     : (x &gt; max) ? max 
+        inline T hardclip (T x, T min, T max) { return (x < min) ? min
+                                                     : (x > max) ? max
                                                      :             x; }
         //----------------------------------------------------------------------
     protected:
@@ -91,7 +91,7 @@ class SidechainAmplifier
         //----------------------------------------------------------------------
 };
 //==============================================================================
-} // namespace Wavechild670 
+} // namespace Wavechild670
 //==============================================================================
 #endif  // __F670L_SIDECHAINAMPLIFIER_HPP_77745FAF__
 //==============================================================================

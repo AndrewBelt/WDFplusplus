@@ -5,28 +5,28 @@
     Wave digital filter based emulation of a famous 1950's tube stereo limiter
 
     WDF++ based source code by Maxime Coorevits (Nord, France) in 2013
-    
+
     Some part are inspired by the Peter Raffensperger project: Wavechild670,
-    a command line with python WDF generator that produce C++ code of the circuit. 
-    
+    a command line with python WDF generator that produce C++ code of the circuit.
+
     Major restructuration:
     ----------------------
         * WDF++ based project (single WDF++.hpp file)
         * full C++, zero-dependencies except JUCE (core API, AudioProcessor).
         * JUCE Plugin wrapper processor (VST, AU ...)
         * Photo-Realistic GUI
-    
+
     Reference:
     ----------
-    Toward a Wave Digital Filter Model of the Fairchild 670 Limiter, 
-    Raffensperger, P. A., (2012). 
-    Proc. of the 15th International Conference on Digital Audio Effects (DAFx-12), 
+    Toward a Wave Digital Filter Model of the Fairchild 670 Limiter,
+    Raffensperger, P. A., (2012).
+    Proc. of the 15th International Conference on Digital Audio Effects (DAFx-12),
     York, UK, September 17-21, 2012.
     Note:
     -----
-    Fairchild (R) a registered trademark of Avid Technology, Inc., 
+    Fairchild (R) a registered trademark of Avid Technology, Inc.,
     which is in no way associated or affiliated with the author.
-    
+
 **/
 //==============================================================================
 #ifndef __F670L_LEVELTIMECONSTANT_HPP_E666EC81__
@@ -39,10 +39,10 @@ namespace Wavechild670 {
 //----------------------------------------------------------------------
 // Level Time Constant 6-way switch parameters (time from 10dB limiting)
 //----------------------------------------------------------------------
-static const double ltc[6][6] = 
+static const double ltc[6][6] =
 {
     //------------------------------------------------------------------
-    // CT    CU        CV        RT        RU       RV   | Release Time 
+    // CT    CU        CV        RT        RU       RV   | Release Time
     //------------------------------------------------------------------
     { 2e-6, 8e-6, 20e-6,  51.9e3,  10e9,  10e9 }, // 0.3s
     { 2e-6, 8e-6, 20e-6, 149.9e3,  10e9,  10e9 }, // 0.8s
@@ -53,7 +53,7 @@ static const double ltc[6][6] =
     //------------------------------------------------------------------
 };
 //==============================================================================
-template &lt;typename T&gt;
+template <typename T>
 class LevelTimeConstant
 {
     public:
@@ -73,26 +73,26 @@ class LevelTimeConstant
         //----------------------------------------------------------------------
         void parameters (T Fs, const int index)
         {
-            jassert(index &gt;= 0 &amp;&amp; index &lt; 6);
+            jassert(index >= 0 && index < 6);
             update (Fs, ltc[index][0], ltc[index][1], ltc[index][2],
                         ltc[index][3], ltc[index][4], ltc[index][5]);
         }
         //----------------------------------------------------------------------
-        T process (T Iin) // Iin == current (current law apply) 
+        T process (T Iin) // Iin == current (current law apply)
         {
             root.incident (root.reflected() - (2.0*(Iin * root.R())));
             return C1.voltage();
         }
         //----------------------------------------------------------------------
     protected:
-        WDF::Resistor&lt;T&gt;    R1, R2, R3;
-        WDF::Capacitor&lt;T&gt;   C1, C2, C3;
+        WDF::Resistor<T>    R1, R2, R3;
+        WDF::Capacitor<T>   C1, C2, C3;
         //----------------------------------------------------------------------
-        WDF::Serie&lt;T&gt;       serie_A;
-        WDF::Serie&lt;T&gt;       serie_B;
-        WDF::Parallel&lt;T&gt;    paral_A;
-        WDF::Parallel&lt;T&gt;    paral_B;
-        WDF::Parallel&lt;T&gt;    root;
+        WDF::Serie<T>       serie_A;
+        WDF::Serie<T>       serie_B;
+        WDF::Parallel<T>    paral_A;
+        WDF::Parallel<T>    paral_B;
+        WDF::Parallel<T>    root;
         //----------------------------------------------------------------------
         /**
                 --------------------------
@@ -106,14 +106,14 @@ class LevelTimeConstant
         //----------------------------------------------------------------------
         inline void wiring ()
         {
-            paral_A.connect (&amp;R1,       &amp;C1);
-            serie_A.connect (&amp;R2,       &amp;C2);
-            serie_B.connect (&amp;R3,       &amp;C3);
-            paral_B.connect (&amp;serie_A,  &amp;serie_B);
-               root.connect (&amp;paral_A,  &amp;paral_B);
+            paral_A.connect (&R1,       &C1);
+            serie_A.connect (&R2,       &C2);
+            serie_B.connect (&R3,       &C3);
+            paral_B.connect (&serie_A,  &serie_B);
+               root.connect (&paral_A,  &paral_B);
         }
         //----------------------------------------------------------------------
-        void update (T Fs, T CT = 2e-6,  T CU = 8e-6, T CV = 20e-6, 
+        void update (T Fs, T CT = 2e-6,  T CU = 8e-6, T CV = 20e-6,
                            T RT = 220e3, T RU = 1e9,  T RV = 1e9)
         {
             T hFs = FS*.5;
@@ -131,7 +131,7 @@ class LevelTimeConstant
         //----------------------------------------------------------------------
 };
 //==============================================================================
-} // namespace Wavechild670 
+} // namespace Wavechild670
 //==============================================================================
 #endif  // __F670L_LEVELTIMECONSTANT_HPP_E666EC81__
 //==============================================================================
