@@ -3,7 +3,8 @@
 This project is derived from code written by maxprod from the JUCE forums.
 https://forum.juce.com/t/wdf-new-restructuration-project-audio-processor/13104
 
-The file `WDF++.hpp` is MIT-licensed. The other files implementing a Fairchild 670 Limiter can be used as a resource for usage but are not licensed explicitly.
+The file `WDF++.hpp` is copyright (c) 2013 by Maxime Coorevits and licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php).
+The other `*.hpp`, `*.h`, and `.cpp` files implementing a Fairchild 670 Limiter are not licensed explicitly.
 
 >maxprod
 >July 2, 2014
